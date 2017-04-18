@@ -1,0 +1,36 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "org.contacomigo.profile"
+    },
+    "jhipsterVersion": "4.1.1",
+    "baseName": "profile",
+    "packageName": "org.contacomigo.profile",
+    "packageFolder": "org/contacomigo/profile",
+    "serverPort": "8081",
+    "authenticationType": "uaa",
+    "uaaBaseName": "oauth",
+    "hibernateCache": "no",
+    "clusteredHttpSession": false,
+    "websocket": false,
+    "databaseType": "mongodb",
+    "devDatabaseType": "mongodb",
+    "prodDatabaseType": "mongodb",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": "eureka",
+    "buildTool": "maven",
+    "enableSocialSignIn": false,
+    "jwtSecretKey": "4f240799d7fea9117a8cad2fcc9a712b69090eda",
+    "enableTranslation": false,
+    "applicationType": "microservice",
+    "testFrameworks": [
+      "gatling",
+      "cucumber"
+    ],
+    "jhiPrefix": "jhi",
+    "skipClient": true,
+    "skipUserManagement": true,
+    "clientPackageManager": "yarn"
+  }
+}
