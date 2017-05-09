@@ -8,12 +8,14 @@ import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.contacomigo.profile.domain.enumeration.DetailType;
+
 /**
- * A Profile.
+ * A Details.
  */
 
-@Document(collection = "profile")
-public class Profile implements Serializable {
+@Document(collection = "details")
+public class Details implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -21,12 +23,12 @@ public class Profile implements Serializable {
     private String id;
 
     @NotNull
-    @Field("profile_id")
-    private String profileId;
+    @Field("detail_id")
+    private String detailId;
 
     @NotNull
-    @Field("user_id")
-    private String userId;
+    @Field("type")
+    private DetailType type;
 
     public String getId() {
         return id;
@@ -36,30 +38,30 @@ public class Profile implements Serializable {
         this.id = id;
     }
 
-    public String getProfileId() {
-        return profileId;
+    public String getDetailId() {
+        return detailId;
     }
 
-    public Profile profileId(String profileId) {
-        this.profileId = profileId;
+    public Details detailId(String detailId) {
+        this.detailId = detailId;
         return this;
     }
 
-    public void setProfileId(String profileId) {
-        this.profileId = profileId;
+    public void setDetailId(String detailId) {
+        this.detailId = detailId;
     }
 
-    public String getUserId() {
-        return userId;
+    public DetailType getType() {
+        return type;
     }
 
-    public Profile userId(String userId) {
-        this.userId = userId;
+    public Details type(DetailType type) {
+        this.type = type;
         return this;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setType(DetailType type) {
+        this.type = type;
     }
 
     @Override
@@ -70,11 +72,11 @@ public class Profile implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Profile profile = (Profile) o;
-        if (profile.id == null || id == null) {
+        Details details = (Details) o;
+        if (details.id == null || id == null) {
             return false;
         }
-        return Objects.equals(id, profile.id);
+        return Objects.equals(id, details.id);
     }
 
     @Override
@@ -84,10 +86,10 @@ public class Profile implements Serializable {
 
     @Override
     public String toString() {
-        return "Profile{" +
+        return "Details{" +
             "id=" + id +
-            ", profileId='" + profileId + "'" +
-            ", userId='" + userId + "'" +
+            ", detailId='" + detailId + "'" +
+            ", type='" + type + "'" +
             '}';
     }
 }

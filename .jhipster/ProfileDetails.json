@@ -10,7 +10,7 @@
             ]
         },
         {
-            "fieldName": "userId",
+            "fieldName": "detailId",
             "fieldType": "String",
             "fieldValidateRules": [
                 "required"
@@ -18,7 +18,7 @@
         }
     ],
     "changelogDate": "20170509005114",
-    "entityTableName": "profile",
+    "entityTableName": "profile_details",
     "dto": "no",
     "pagination": "no",
     "service": "no"

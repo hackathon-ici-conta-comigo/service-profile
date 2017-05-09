@@ -9,11 +9,11 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A Profile.
+ * A ProfileDetails.
  */
 
-@Document(collection = "profile")
-public class Profile implements Serializable {
+@Document(collection = "profile_details")
+public class ProfileDetails implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,8 +25,8 @@ public class Profile implements Serializable {
     private String profileId;
 
     @NotNull
-    @Field("user_id")
-    private String userId;
+    @Field("detail_id")
+    private String detailId;
 
     public String getId() {
         return id;
@@ -40,7 +40,7 @@ public class Profile implements Serializable {
         return profileId;
     }
 
-    public Profile profileId(String profileId) {
+    public ProfileDetails profileId(String profileId) {
         this.profileId = profileId;
         return this;
     }
@@ -49,17 +49,17 @@ public class Profile implements Serializable {
         this.profileId = profileId;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getDetailId() {
+        return detailId;
     }
 
-    public Profile userId(String userId) {
-        this.userId = userId;
+    public ProfileDetails detailId(String detailId) {
+        this.detailId = detailId;
         return this;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setDetailId(String detailId) {
+        this.detailId = detailId;
     }
 
     @Override
@@ -70,11 +70,11 @@ public class Profile implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Profile profile = (Profile) o;
-        if (profile.id == null || id == null) {
+        ProfileDetails profileDetails = (ProfileDetails) o;
+        if (profileDetails.id == null || id == null) {
             return false;
         }
-        return Objects.equals(id, profile.id);
+        return Objects.equals(id, profileDetails.id);
     }
 
     @Override
@@ -84,10 +84,10 @@ public class Profile implements Serializable {
 
     @Override
     public String toString() {
-        return "Profile{" +
+        return "ProfileDetails{" +
             "id=" + id +
             ", profileId='" + profileId + "'" +
-            ", userId='" + userId + "'" +
+            ", detailId='" + detailId + "'" +
             '}';
     }
 }

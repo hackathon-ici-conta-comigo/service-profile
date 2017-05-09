@@ -6,7 +6,6 @@ import org.contacomigo.profile.config.SecurityBeanOverrideConfiguration;
 
 import org.contacomigo.profile.domain.Profile;
 import org.contacomigo.profile.repository.ProfileRepository;
-import org.contacomigo.profile.service.ProfileService;
 import org.contacomigo.profile.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -38,14 +37,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = {ProfileApp.class, SecurityBeanOverrideConfiguration.class})
 public class ProfileResourceIntTest {
 
+    private static final String DEFAULT_PROFILE_ID = "AAAAAAAAAA";
+    private static final String UPDATED_PROFILE_ID = "BBBBBBBBBB";
+
     private static final String DEFAULT_USER_ID = "AAAAAAAAAA";
     private static final String UPDATED_USER_ID = "BBBBBBBBBB";
 
     @Autowired
     private ProfileRepository profileRepository;
-
-    @Autowired
-    private ProfileService profileService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -63,7 +62,7 @@ public class ProfileResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        ProfileResource profileResource = new ProfileResource(profileService);
+        ProfileResource profileResource = new ProfileResource(profileRepository);
         this.restProfileMockMvc = MockMvcBuilders.standaloneSetup(profileResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -78,6 +77,7 @@ public class ProfileResourceIntTest {
      */
     public static Profile createEntity() {
         Profile profile = new Profile()
+            .profileId(DEFAULT_PROFILE_ID)
             .userId(DEFAULT_USER_ID);
         return profile;
     }
@@ -102,6 +102,7 @@ public class ProfileResourceIntTest {
         List<Profile> profileList = profileRepository.findAll();
         assertThat(profileList).hasSize(databaseSizeBeforeCreate + 1);
         Profile testProfile = profileList.get(profileList.size() - 1);
+        assertThat(testProfile.getProfileId()).isEqualTo(DEFAULT_PROFILE_ID);
         assertThat(testProfile.getUserId()).isEqualTo(DEFAULT_USER_ID);
     }
 
@@ -121,6 +122,23 @@ public class ProfileResourceIntTest {
         // Validate the Alice in the database
         List<Profile> profileList = profileRepository.findAll();
         assertThat(profileList).hasSize(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    public void checkProfileIdIsRequired() throws Exception {
+        int databaseSizeBeforeTest = profileRepository.findAll().size();
+        // set the field null
+        profile.setProfileId(null);
+
+        // Create the Profile, which fails.
+
+        restProfileMockMvc.perform(post("/api/profiles")
+            .contentType(TestUtil.APPLICATION_JSON_UTF8)
+            .content(TestUtil.convertObjectToJsonBytes(profile)))
+            .andExpect(status().isBadRequest());
+
+        List<Profile> profileList = profileRepository.findAll();
+        assertThat(profileList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
@@ -150,6 +168,7 @@ public class ProfileResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(profile.getId())))
+            .andExpect(jsonPath("$.[*].profileId").value(hasItem(DEFAULT_PROFILE_ID.toString())))
             .andExpect(jsonPath("$.[*].userId").value(hasItem(DEFAULT_USER_ID.toString())));
     }
 
@@ -163,6 +182,7 @@ public class ProfileResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(profile.getId()))
+            .andExpect(jsonPath("$.profileId").value(DEFAULT_PROFILE_ID.toString()))
             .andExpect(jsonPath("$.userId").value(DEFAULT_USER_ID.toString()));
     }
 
@@ -176,13 +196,13 @@ public class ProfileResourceIntTest {
     @Test
     public void updateProfile() throws Exception {
         // Initialize the database
-        profileService.save(profile);
-
+        profileRepository.save(profile);
         int databaseSizeBeforeUpdate = profileRepository.findAll().size();
 
         // Update the profile
         Profile updatedProfile = profileRepository.findOne(profile.getId());
         updatedProfile
+            .profileId(UPDATED_PROFILE_ID)
             .userId(UPDATED_USER_ID);
 
         restProfileMockMvc.perform(put("/api/profiles")
@@ -194,6 +214,7 @@ public class ProfileResourceIntTest {
         List<Profile> profileList = profileRepository.findAll();
         assertThat(profileList).hasSize(databaseSizeBeforeUpdate);
         Profile testProfile = profileList.get(profileList.size() - 1);
+        assertThat(testProfile.getProfileId()).isEqualTo(UPDATED_PROFILE_ID);
         assertThat(testProfile.getUserId()).isEqualTo(UPDATED_USER_ID);
     }
 
@@ -217,8 +238,7 @@ public class ProfileResourceIntTest {
     @Test
     public void deleteProfile() throws Exception {
         // Initialize the database
-        profileService.save(profile);
-
+        profileRepository.save(profile);
         int databaseSizeBeforeDelete = profileRepository.findAll().size();
 
         // Get the profile

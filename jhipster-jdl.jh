@@ -1,0 +1,19 @@
+entity Profile {
+    profileId String required,
+    userId String required
+}
+
+enum DetailType {
+	INTEREST, HABILITY, EXPERIENCE, DIFICULTY
+}
+
+entity Details {
+	detailId String required,
+    type DetailType required
+}
+
+entity ProfileDetails {
+	profileId String required,
+    detailId String required
+}
+

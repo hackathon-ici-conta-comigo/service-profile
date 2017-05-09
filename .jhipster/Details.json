@@ -3,22 +3,23 @@
     "relationships": [],
     "fields": [
         {
-            "fieldName": "profileId",
+            "fieldName": "detailId",
             "fieldType": "String",
             "fieldValidateRules": [
                 "required"
             ]
         },
         {
-            "fieldName": "userId",
-            "fieldType": "String",
+            "fieldName": "type",
+            "fieldType": "DetailType",
+            "fieldValues": "INTEREST,HABILITY,EXPERIENCE,DIFICULTY",
             "fieldValidateRules": [
                 "required"
             ]
         }
     ],
     "changelogDate": "20170509005114",
-    "entityTableName": "profile",
+    "entityTableName": "details",
     "dto": "no",
     "pagination": "no",
     "service": "no"
