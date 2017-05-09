@@ -1,4 +1,3 @@
-
 entity Profile {
     profileId String required,
     userId String required
