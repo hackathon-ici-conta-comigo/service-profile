@@ -1,21 +1,31 @@
 package org.contacomigo.profile.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
-import org.contacomigo.profile.domain.ProfileDetails;
-
-import org.contacomigo.profile.repository.ProfileDetailsRepository;
-import org.contacomigo.profile.web.rest.util.HeaderUtil;
-import io.github.jhipster.web.util.ResponseUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
+
+import javax.validation.Valid;
+
+import org.contacomigo.profile.domain.ProfileDetails;
+import org.contacomigo.profile.service.ProfileDetailsService;
+import org.contacomigo.profile.web.rest.util.HeaderUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.codahale.metrics.annotation.Timed;
+
+import io.github.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing ProfileDetails.
@@ -25,13 +35,12 @@ import java.util.Optional;
 public class ProfileDetailsResource {
 
     private final Logger log = LoggerFactory.getLogger(ProfileDetailsResource.class);
-
     private static final String ENTITY_NAME = "profileDetails";
-        
-    private final ProfileDetailsRepository profileDetailsRepository;
 
-    public ProfileDetailsResource(ProfileDetailsRepository profileDetailsRepository) {
-        this.profileDetailsRepository = profileDetailsRepository;
+    private final ProfileDetailsService profileDetailsService;
+
+    public ProfileDetailsResource(ProfileDetailsService profileDetailsService) {
+        this.profileDetailsService = profileDetailsService;
     }
 
     /**
@@ -48,7 +57,7 @@ public class ProfileDetailsResource {
         if (profileDetails.getId() != null) {
             return ResponseEntity.badRequest().headers(HeaderUtil.createFailureAlert(ENTITY_NAME, "idexists", "A new profileDetails cannot already have an ID")).body(null);
         }
-        ProfileDetails result = profileDetailsRepository.save(profileDetails);
+        ProfileDetails result = profileDetailsService.save(profileDetails);
         return ResponseEntity.created(new URI("/api/profile-details/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -70,7 +79,7 @@ public class ProfileDetailsResource {
         if (profileDetails.getId() == null) {
             return createProfileDetails(profileDetails);
         }
-        ProfileDetails result = profileDetailsRepository.save(profileDetails);
+        ProfileDetails result = profileDetailsService.save(profileDetails);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, profileDetails.getId().toString()))
             .body(result);
@@ -85,7 +94,7 @@ public class ProfileDetailsResource {
     @Timed
     public List<ProfileDetails> getAllProfileDetails() {
         log.debug("REST request to get all ProfileDetails");
-        List<ProfileDetails> profileDetails = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetails = profileDetailsService.findAll();
         return profileDetails;
     }
 
@@ -99,7 +108,7 @@ public class ProfileDetailsResource {
     @Timed
     public ResponseEntity<ProfileDetails> getProfileDetails(@PathVariable String id) {
         log.debug("REST request to get ProfileDetails : {}", id);
-        ProfileDetails profileDetails = profileDetailsRepository.findOne(id);
+        ProfileDetails profileDetails = profileDetailsService.findOne(id);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(profileDetails));
     }
 
@@ -113,8 +122,14 @@ public class ProfileDetailsResource {
     @Timed
     public ResponseEntity<Void> deleteProfileDetails(@PathVariable String id) {
         log.debug("REST request to delete ProfileDetails : {}", id);
-        profileDetailsRepository.delete(id);
+        profileDetailsService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
+    @GetMapping("/profile-detail/search")
+    @Timed
+    public List<ProfileDetails> findByAddress(@RequestParam("address") String address) {
+        log.debug("REST search profile detail by address");
+        return profileDetailsService.findByAddress(address);
+    }
 }

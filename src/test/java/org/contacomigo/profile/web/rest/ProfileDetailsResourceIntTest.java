@@ -1,13 +1,22 @@
 package org.contacomigo.profile.web.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import org.contacomigo.profile.ProfileApp;
-
 import org.contacomigo.profile.config.SecurityBeanOverrideConfiguration;
-
 import org.contacomigo.profile.domain.ProfileDetails;
-import org.contacomigo.profile.repository.ProfileDetailsRepository;
+import org.contacomigo.profile.service.ProfileDetailsService;
 import org.contacomigo.profile.web.rest.errors.ExceptionTranslator;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,13 +29,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * Test class for the ProfileDetailsResource REST controller.
@@ -44,7 +46,7 @@ public class ProfileDetailsResourceIntTest {
     private static final String UPDATED_DETAIL_ID = "BBBBBBBBBB";
 
     @Autowired
-    private ProfileDetailsRepository profileDetailsRepository;
+    private ProfileDetailsService profileDetailsService;
 
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
@@ -62,7 +64,7 @@ public class ProfileDetailsResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        ProfileDetailsResource profileDetailsResource = new ProfileDetailsResource(profileDetailsRepository);
+        ProfileDetailsResource profileDetailsResource = new ProfileDetailsResource(profileDetailsService);
         this.restProfileDetailsMockMvc = MockMvcBuilders.standaloneSetup(profileDetailsResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -84,13 +86,13 @@ public class ProfileDetailsResourceIntTest {
 
     @Before
     public void initTest() {
-        profileDetailsRepository.deleteAll();
+    	profileDetailsService.deleteAll();
         profileDetails = createEntity();
     }
 
     @Test
     public void createProfileDetails() throws Exception {
-        int databaseSizeBeforeCreate = profileDetailsRepository.findAll().size();
+        int databaseSizeBeforeCreate = profileDetailsService.findAll().size();
 
         // Create the ProfileDetails
         restProfileDetailsMockMvc.perform(post("/api/profile-details")
@@ -99,7 +101,7 @@ public class ProfileDetailsResourceIntTest {
             .andExpect(status().isCreated());
 
         // Validate the ProfileDetails in the database
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeCreate + 1);
         ProfileDetails testProfileDetails = profileDetailsList.get(profileDetailsList.size() - 1);
         assertThat(testProfileDetails.getProfileId()).isEqualTo(DEFAULT_PROFILE_ID);
@@ -108,7 +110,7 @@ public class ProfileDetailsResourceIntTest {
 
     @Test
     public void createProfileDetailsWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = profileDetailsRepository.findAll().size();
+        int databaseSizeBeforeCreate = profileDetailsService.findAll().size();
 
         // Create the ProfileDetails with an existing ID
         profileDetails.setId("existing_id");
@@ -120,13 +122,13 @@ public class ProfileDetailsResourceIntTest {
             .andExpect(status().isBadRequest());
 
         // Validate the Alice in the database
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeCreate);
     }
 
     @Test
     public void checkProfileIdIsRequired() throws Exception {
-        int databaseSizeBeforeTest = profileDetailsRepository.findAll().size();
+        int databaseSizeBeforeTest = profileDetailsService.findAll().size();
         // set the field null
         profileDetails.setProfileId(null);
 
@@ -137,13 +139,13 @@ public class ProfileDetailsResourceIntTest {
             .content(TestUtil.convertObjectToJsonBytes(profileDetails)))
             .andExpect(status().isBadRequest());
 
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
     public void checkDetailIdIsRequired() throws Exception {
-        int databaseSizeBeforeTest = profileDetailsRepository.findAll().size();
+        int databaseSizeBeforeTest = profileDetailsService.findAll().size();
         // set the field null
         profileDetails.setDetailId(null);
 
@@ -154,14 +156,14 @@ public class ProfileDetailsResourceIntTest {
             .content(TestUtil.convertObjectToJsonBytes(profileDetails)))
             .andExpect(status().isBadRequest());
 
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
     public void getAllProfileDetails() throws Exception {
         // Initialize the database
-        profileDetailsRepository.save(profileDetails);
+    	profileDetailsService.save(profileDetails);
 
         // Get all the profileDetailsList
         restProfileDetailsMockMvc.perform(get("/api/profile-details?sort=id,desc"))
@@ -175,7 +177,7 @@ public class ProfileDetailsResourceIntTest {
     @Test
     public void getProfileDetails() throws Exception {
         // Initialize the database
-        profileDetailsRepository.save(profileDetails);
+    	profileDetailsService.save(profileDetails);
 
         // Get the profileDetails
         restProfileDetailsMockMvc.perform(get("/api/profile-details/{id}", profileDetails.getId()))
@@ -196,11 +198,11 @@ public class ProfileDetailsResourceIntTest {
     @Test
     public void updateProfileDetails() throws Exception {
         // Initialize the database
-        profileDetailsRepository.save(profileDetails);
-        int databaseSizeBeforeUpdate = profileDetailsRepository.findAll().size();
+    	profileDetailsService.save(profileDetails);
+        int databaseSizeBeforeUpdate = profileDetailsService.findAll().size();
 
         // Update the profileDetails
-        ProfileDetails updatedProfileDetails = profileDetailsRepository.findOne(profileDetails.getId());
+        ProfileDetails updatedProfileDetails = profileDetailsService.findOne(profileDetails.getId());
         updatedProfileDetails
             .profileId(UPDATED_PROFILE_ID)
             .detailId(UPDATED_DETAIL_ID);
@@ -211,7 +213,7 @@ public class ProfileDetailsResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate the ProfileDetails in the database
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeUpdate);
         ProfileDetails testProfileDetails = profileDetailsList.get(profileDetailsList.size() - 1);
         assertThat(testProfileDetails.getProfileId()).isEqualTo(UPDATED_PROFILE_ID);
@@ -220,7 +222,7 @@ public class ProfileDetailsResourceIntTest {
 
     @Test
     public void updateNonExistingProfileDetails() throws Exception {
-        int databaseSizeBeforeUpdate = profileDetailsRepository.findAll().size();
+        int databaseSizeBeforeUpdate = profileDetailsService.findAll().size();
 
         // Create the ProfileDetails
 
@@ -231,15 +233,15 @@ public class ProfileDetailsResourceIntTest {
             .andExpect(status().isCreated());
 
         // Validate the ProfileDetails in the database
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
     @Test
     public void deleteProfileDetails() throws Exception {
         // Initialize the database
-        profileDetailsRepository.save(profileDetails);
-        int databaseSizeBeforeDelete = profileDetailsRepository.findAll().size();
+    	profileDetailsService.save(profileDetails);
+        int databaseSizeBeforeDelete = profileDetailsService.findAll().size();
 
         // Get the profileDetails
         restProfileDetailsMockMvc.perform(delete("/api/profile-details/{id}", profileDetails.getId())
@@ -247,7 +249,7 @@ public class ProfileDetailsResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate the database is empty
-        List<ProfileDetails> profileDetailsList = profileDetailsRepository.findAll();
+        List<ProfileDetails> profileDetailsList = profileDetailsService.findAll();
         assertThat(profileDetailsList).hasSize(databaseSizeBeforeDelete - 1);
     }
 

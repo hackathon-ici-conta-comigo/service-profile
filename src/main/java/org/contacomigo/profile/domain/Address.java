@@ -1,12 +1,14 @@
 package org.contacomigo.profile.domain;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
-import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.TextIndexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * A Address.
@@ -22,14 +24,17 @@ public class Address implements Serializable {
 
     @NotNull
     @Field("street")
+    @TextIndexed
     private String street;
 
     @NotNull
     @Field("country")
+    @TextIndexed
     private String country;
 
     @NotNull
     @Field("city")
+    @TextIndexed
     private String city;
 
     @Field("number")
